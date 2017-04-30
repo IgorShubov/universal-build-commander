@@ -1,0 +1,14 @@
+package com.ubc.plugin
+
+buildscript {
+	repositories {
+		mavenLocal()
+		maven { url "https://dl.bintray.com" }  //todo: need to create a public repo on bintray and publish the plugin there
+	}
+	
+	dependencies {
+        classpath "com.ubc.plugin:gbc:1.0-SNAPSHOT"
+    }
+}
+
+apply plugin: 'buildCommander'

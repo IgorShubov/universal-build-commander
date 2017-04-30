@@ -1,0 +1,674 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xerces="http://xerces.apache.org">
+    <xs:element name="build">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="analysis" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:all>
+                        <xs:element name="analysis-sources" minOccurs="0" maxOccurs="1">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string"/>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="analysis-sources-exclusions" minOccurs="0" maxOccurs="1">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string"/>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="analysis-tests" minOccurs="0" maxOccurs="1">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string"/>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="analysis-tests-exclusions" minOccurs="0" maxOccurs="1">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string"/>
+                            </xs:simpleType>
+                        </xs:element>
+                    </xs:all>
+                </xs:complexType>
+                </xs:element>
+
+                <xs:element name="environment" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:all>
+                            <xs:element name="platform" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="win"/>
+                                        <xs:enumeration value="linux"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+
+                            <xs:element name="buildTool" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="maven"/>
+                                        <xs:enumeration value="msbuild"/>
+                                        <xs:enumeration value="gradle"/>
+                                        <xs:enumeration value="native"/>
+                                        <xs:enumeration value="make"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+
+                            <xs:element name="variables" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="variable" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="contains($value,'=')"
+                                                                  xerces:message="Environment variables must be of the form: 'name=value'"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+
+                        </xs:all>
+                        <xs:assert test="count(*) ge 1"
+                                   xerces:message="'environment' must contain a 'platform', 'buildTool' or 'variables' section"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="maven" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:all>
+                            <xs:element name="version" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="3.0.4"/>
+                                        <xs:enumeration value="3.0.5"/>
+                                        <xs:enumeration value="3.1.1"/>
+                                        <xs:enumeration value="3.2.3"/>
+                                        <xs:enumeration value="3.3.3"/>
+                                        <xs:enumeration value="3.3.9"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+
+                            <xs:element name="args" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="arg" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-s')) and not(contains($value,'\-\-settings'))"
+                                                            xerces:message="It's not allowed to overwrite the settings.xml location using -s"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-f ')) and not(contains($value,'\-\-file'))"
+                                                            xerces:message="It's not allowed to overwrite the pom.xml location using -f, use the 'rootPom' option"/>
+                                                    <xs:assertion test="starts-with($value, '-')"
+                                                                  xerces:message="Maven args have to start with '-'"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <xs:element name="versionUpdateExcludes" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="exclude" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="not($value = *)" xerces:message="It's not allowed to specify a '*' wildcard alone, add at least one char with a wildcard"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <xs:element name="toolchains" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="toolchain" minOccurs="0" maxOccurs="1">
+                                            <xs:complexType>
+                                                <xs:all>
+                                                    <xs:element name="name" minOccurs="1" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="protobuf"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="version" minOccurs="1" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="2.5.0"/>
+                                                                <xs:enumeration value="2.6.1"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                </xs:all>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <xs:element name="opts" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:assertion test="starts-with($value, '-')"
+                                                      xerces:message="Maven opts have to start with '-'"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+
+                            <xs:element name="rootPom" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:assertion test="not($value eq '')"
+                                                      xerces:message="'rootPom' can't be empty"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                        </xs:all>
+                        <xs:assert test="count(*) ge 1"
+                                   xerces:message="'maven' must contain a 'version', 'args', 'opts', 'rootPom', 'toolchains' or 'versionUpdateExcludes' section"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="msbuild" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:all>
+                            <xs:element name="projectFile" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:assertion test="not($value eq '')"
+                                                      xerces:message="'projectFile' can't be empty"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="projectName" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:assertion test="not($value eq '')"
+                                                      xerces:message="'projectName' can't be empty"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="targets" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="target" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="not($value eq '')"
+                                                                  xerces:message="'target' can't be empty"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="releaseTargets" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="target" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="not($value eq '')"
+                                                                  xerces:message="'target' can't be empty"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="parameters" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="parameter" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="not($value eq '')"
+                                                                  xerces:message="'parameter' can't be empty"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="releaseParameters" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="parameter" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="not($value eq '')"
+                                                                  xerces:message="'parameter' can't be empty"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="verbosity" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="minimal"/>
+                                        <xs:enumeration value="normal"/>
+                                        <xs:enumeration value="detailed"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="skipAssemblyInfoUpdate" minOccurs="0" maxOccurs="1" type="xs:boolean">
+                            </xs:element>
+                            <xs:element name="visualCpp" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="sdk" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="7.0"/>
+                                                    <xs:enumeration value="7.1"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="configuration" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="Debug"/>
+                                                    <xs:enumeration value="Release"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="platform" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="win7"/>
+                                                    <xs:enumeration value="vista"/>
+                                                    <xs:enumeration value="xp"/>
+                                                    <xs:enumeration value="2008"/>
+                                                    <xs:enumeration value="2003"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="architecture" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="x86"/>
+                                                    <xs:enumeration value="x64"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:all>
+                        <xs:assert test="count(*) ge 1"
+                                   xerces:message="'msbuild' must contain a 'projectFile', 'projectName', 'targets', 'releaseTargets', 'parameters', 'releaseParameters', 'verbosity', 'skipAssemblyInfoUpdate' or 'visualcpp' section"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="gradle" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:all>
+                            <xs:element name="version" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="1.9"/>
+                                        <xs:enumeration value="2.0"/>
+                                        <xs:enumeration value="2.1"/>
+                                        <xs:enumeration value="2.2.1"/>
+                                        <xs:enumeration value="2.3"/>
+                                        <xs:enumeration value="2.4"/>
+                                        <xs:enumeration value="2.7"/>
+                                        <xs:enumeration value="2.8"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="systemProperties" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="systemProperty" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="starts-with($value, '-D') or starts-with($value, '-\-system-prop')" xerces:message="Gradle system properties have to start with '-D' or '-\-system-prop'"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="projectProperties" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="projectProperty" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="starts-with($value, '-P') or starts-with($value, '-\-project-prop')" xerces:message="Gradle project properties have to start with '-P' or '-\-project-prop'"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="buildFile" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="settingsFile" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="tasks" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="task" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string"/>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="opts" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:assertion test="starts-with($value, '-')"
+                                                      xerces:message="Gradle opts have to start with '-'"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="args" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="arg" minOccurs="1" maxOccurs="unbounded">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-b')) and not(contains($value,'-\-build-file'))"
+                                                            xerces:message="It's not allowed to overwrite build file in &lt;arg/&gt;.  Use &lt;buildFile/&gt; tag instead"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-c')) and not(contains($value,'-\-settings-file'))"
+                                                            xerces:message="It's not allowed to overwrite settings file in &lt;arg/&gt;.  Use &lt;settingsFile/&gt; tag instead"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-\-configure-on-demand'))
+                                                                and not(contains($value, '-\-continue'))
+                                                                and not(contains($value, '-\-daemon'))
+                                                                and not(contains($value, '-\-foreground'))
+                                                                and not(contains($value, '-\-gui'))
+                                                                and not(contains($value, '-\-no-color'))
+                                                                and not(contains($value, '-\-no-daemon'))
+                                                                and not(contains($value, '-\-project-cache-dir'))
+                                                                and not(contains($value, '-\-stop'))"
+                                                            xerces:message="arguments -\-configure-on-demand, -\-continue, -\-daemon, -\-foreground, -\-gui, -\-no-color, -\-no-daemon, -\-project-cache-dir, -\-stop are not supported"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-D')) and not(contains($value,'-\-system-prop'))"
+                                                            xerces:message="It's not allowed to overwrite system property in &lt;arg/&gt;.  Use &lt;systemProperties/&gt; tag instead"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-g')) and not(contains($value,'-\-gradle-user-home'))"
+                                                            xerces:message="It's not allowed to overwrite gradle user home"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-I')) and not(contains($value,'-\-init-script'))"
+                                                            xerces:message="It's not allowed to overwrite init-script"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-m')) and not(contains($value,'-\-dry-run'))"
+                                                            xerces:message="Dry run is not supported"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-P')) and not(contains($value,'-\-project-prop'))"
+                                                            xerces:message="It's not allowed to overwrite project property &lt;arg/&gt;.  Use &lt;projectProperty/&gt; tag instead"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-p')) and not(contains($value,'-\-project-dir'))"
+                                                            xerces:message="It's not allowed to overwrite project directory"/>
+                                                    <xs:assertion
+                                                            test="not(contains($value,'-x')) and not(contains($value,'-\-exclude-task'))"
+                                                            xerces:message="Exclude task is not supported"/>
+                                                    <xs:assertion test="starts-with($value, '-')"
+                                                                  xerces:message="Gradle args have to start with '-'"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:assert test="count(*) ge 1" xerces:message="'args' must contain an 'arg'"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:all>
+                        <xs:assert test="count(*) ge 1" xerces:message="'gradle' must contain either one of these sections: 'version', 'systemProperties', 'projectProperties', 'buildFile', 'settingsFile', 'task', 'opts', or 'args'"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="native" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:all>
+                            <xs:element name="groupId" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="version" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="aol" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="dependencyDefaultAol" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="makefile" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="makeExec" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="makeTargets" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="workingDir" minOccurs="0" maxOccurs="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="cmake" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:all>
+                                        <xs:element name="cmakeExec" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string"/>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="sourcePath" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string"/>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="option" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string"/>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="workingDir" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string"/>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:all>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="compiler" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:all>
+                                        <xs:element name="version" minOccurs="0" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="gcc-4.8.4"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:all>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="nativeConfiguration" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:all>
+                                        <xs:element name="downloadDir" minOccurs="1" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="string-length($value) &gt; 0"
+                                                                  xerces:message="'downloadDir' can't be empty"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="installDir" minOccurs="1" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="string-length($value) &gt; 0"
+                                                                  xerces:message="'installDir' can't be empty"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="publishDir" minOccurs="1" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:assertion test="string-length($value) &gt; 0"
+                                                                  xerces:message="'publishDir' can't be empty"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="externalDependencies" minOccurs="0" maxOccurs="1">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="externalDependency" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:all>
+                                                                <xs:element name="dependency" minOccurs="0" maxOccurs="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string"></xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="groupId" minOccurs="0" maxOccurs="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:assertion test="string-length($value) &gt; 0"
+                                                                                          xerces:message="'groupId' can't be empty"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="artifactId" minOccurs="0" maxOccurs="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:assertion test="string-length($value) &gt; 0"
+                                                                                          xerces:message="'artifactId' can't be empty"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="version" minOccurs="0" maxOccurs="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:assertion test="string-length($value) &gt; 0"
+                                                                                          xerces:message="'version' can't be empty"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="aol" minOccurs="0" maxOccurs="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:assertion test="string-length($value) &gt; 0"
+                                                                                          xerces:message="'aol' can't be empty"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="classifier" minOccurs="0" maxOccurs="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:assertion test="string-length($value) &gt; 0"
+                                                                                          xerces:message="'version' can't be empty"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="ext" minOccurs="0" maxOccurs="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:assertion test="string-length($value) &gt; 0"
+                                                                                          xerces:message="'ext' can't be empty"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="installDir" minOccurs="0" maxOccurs="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:assertion test="string-length($value) &gt; 0"
+                                                                                          xerces:message="'installDir' can't be empty"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                            </xs:all>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                                <xs:assert test="count(*) ge 1" xerces:message="'externalDependencies' must contain an 'externalDependency'"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="publication" minOccurs="0" maxOccurs="1">
+                                            <xs:complexType>
+                                                <xs:all>
+                                                    <xs:element name="targetDir" minOccurs="1" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string"/>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="artifact" minOccurs="0" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string"/>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="classifier" minOccurs="0" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string"/>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="ext" minOccurs="0" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string"/>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="packageContext" minOccurs="0" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string"/>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                </xs:all>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:all>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:all>
+                    </xs:complexType>
+                </xs:element>
+            </xs:all>
+            <xs:assert test="count(*) ge 1"
+                       xerces:message="'build' must contain an 'environment', 'maven', 'gradle', 'msbuild' or 'native' section"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
