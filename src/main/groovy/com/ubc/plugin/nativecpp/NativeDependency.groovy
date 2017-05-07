@@ -7,10 +7,10 @@ class NativeDependency extends ArtifactPogo implements Dependency {
 
     @Override
     String getGroup() {
-        if (Object.group == null) {
+        if (super.group == null) {
             throw new InvalidUserDataException("group is mandatory and cannot be null")
         }
-        return Object.group
+        return super.group
     }
 
     String installDir

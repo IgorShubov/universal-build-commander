@@ -15,5 +15,7 @@ class NativeCppPlugin implements Plugin<Project> {
             description 'Download all external native dependencies'
             group "Native Dependencies"
         }
+
+        NativeBuildSupport.setupNativeCppPlugin(project)
     }
 }

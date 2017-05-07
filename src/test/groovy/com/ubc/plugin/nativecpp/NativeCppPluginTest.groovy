@@ -11,6 +11,7 @@ public class NativeCppPluginTest {
     // Get a Project with the NativeCppPlugin applied
     private static Project getDefaultProject() {
         final Project project = ProjectBuilder.builder().build()
+        project.apply plugin: NativePlugin
         project.apply plugin: NativeCppPlugin
         return project
     }
@@ -45,9 +46,9 @@ public class NativeCppPluginTest {
     @Test
     void declareDependency() {
         final Project project = ProjectBuilder.builder().build()
-        project.extensions.create("universalNativePlugin", NativePluginExtension)
+        project.extensions.create("nativePlugin", NativePluginExtension)
 
-        project.universalNativePlugin {
+        project.nativePlugin {
             nativeConfiguration = [:]
             nativeConfiguration.put('externalDependencies', new ArrayList<Map>())
             def dependency1 = ['groupId': 'com.ubc.test',
@@ -66,6 +67,7 @@ public class NativeCppPluginTest {
         }
         project.apply plugin: NativeCppPlugin
 
+
         assertEquals(2, project.nativeConfig.nativeDependencies.size())
         assertEquals("com/ubc/test/testutil/1.0/linux64_gcc/testutil-1.0-linux64_gcc.tgz",
                 project.nativeConfig.nativeDependencies[0].getURLPath())
@@ -76,8 +78,8 @@ public class NativeCppPluginTest {
     @Test
     void declareShortFormDependency() {
         final Project project = ProjectBuilder.builder().build()
-        project.extensions.create("universalNativePlugin", NativePluginExtension)
-        project.universalNativePlugin {
+        project.extensions.create("nativePlugin", NativePluginExtension)
+        project.nativePlugin {
             nativeConfiguration = [:]
             nativeConfiguration.put('externalDependencies', new ArrayList<Map>())
             def dependency1 = ['dependency': 'com.ubc.test:testutil:1.0:linux64_gcc:tgz']
@@ -98,8 +100,8 @@ public class NativeCppPluginTest {
     @Test
     void declareDependencyDefaultAol() {
         final Project project = ProjectBuilder.builder().build()
-        project.extensions.create("universalNativePlugin", NativePluginExtension)
-        project.universalNativePlugin {
+        project.extensions.create("nativePlugin", NativePluginExtension)
+        project.nativePlugin {
             dependencyDefaultAol = 'linux64_csl3_gcc'
             nativeConfiguration = [:]
             nativeConfiguration.put('externalDependencies', new ArrayList<Map>())
@@ -120,7 +122,7 @@ public class NativeCppPluginTest {
         }
         project.apply plugin: NativeCppPlugin
 
-        assertEquals(5, project.nativeConfig.nativeDependencies.size())
+        assertEquals(3, project.nativeConfig.nativeDependencies.size())
         assertEquals("com/ubc/test/testutil/1.0/linux64_csl3_gcc/testutil-1.0-linux64_csl3_gcc.tgz",
                 project.nativeConfig.nativeDependencies[0].getURLPath())
         assertEquals("org/apache/commons/apache-commons/2.1/linux64_csl3_gcc/apache-commons-2.1-linux64_csl3_gcc-debug.tgz",
@@ -132,8 +134,8 @@ public class NativeCppPluginTest {
     @Test
     void declareDependencyNoDefaultAol() {
         final Project project = ProjectBuilder.builder().build()
-        project.extensions.create("universalNativePlugin", NativePluginExtension)
-        project.universalNativePlugin {
+        project.extensions.create("nativePlugin", NativePluginExtension)
+        project.nativePlugin {
             aol = 'linux64_csl3_gcc'
             nativeConfiguration = [:]
             nativeConfiguration.put('externalDependencies', new ArrayList())
@@ -165,8 +167,8 @@ public class NativeCppPluginTest {
     @Test
     void declareShortFormDependencyDefaultAol() {
         final Project project = ProjectBuilder.builder().build()
-        project.extensions.create("universalNativePlugin", NativePluginExtension)
-        project.universalNativePlugin {
+        project.extensions.create("nativePlugin", NativePluginExtension)
+        project.nativePlugin {
             aol = 'linux64_csl3_gcc'
             nativeConfiguration = [:]
             nativeConfiguration.put('externalDependencies', new ArrayList<Map>())

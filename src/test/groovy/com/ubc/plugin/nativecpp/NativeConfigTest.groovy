@@ -6,6 +6,8 @@ import org.junit.Test
 
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertTrue
+import com.ubc.plugin.nativecpp.NativeDependency
+import com.ubc.plugin.nativecpp.NativeCppPluginExtension
 
 class NativeConfigTest {
 

@@ -21,16 +21,19 @@ apply plugin: 'artifactory-publish'
 repositories {
     mavenCentral()
     jcenter()
+    maven {
+        url 'http://mvnrepository.com/artifact'
+    }
 }
 
 dependencies {
     compile gradleApi(),
-            'org.codehaus.groovy:groovy-all:2.3.10',
+            'org.codehaus.groovy:groovy-all:2.4.10',
             'org.tmatesoft.svnkit:svnkit:1.8.5',
             'org.tmatesoft.svnkit:svnkit-cli:1.8.5',
             'com.rackspace.apache:xerces2-xsd11:2.11.2',
             'org.codehaus.groovy.modules.http-builder:http-builder:0.5.2',
-            'com.ullink.gradle:gradle-msbuild-plugin:2.14',
+            'com.ullink.gradle:gradle-msbuild-plugin:2.15',
             'org.jfrog.buildinfo:build-info-extractor-gradle:2.2.2',
             'postgresql:postgresql:9.2-1002.jdbc4',
             'org.codehaus.sonar.runner:sonar-runner-dist:2.4',
@@ -70,22 +73,6 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 task allDeps(type: DependencyReportTask) {}
 
-
-/*
-artifactory {
-	publish {
-		contextUrl = artifactoryContextUrl
-		repository {
-			repoKey = repo
-			username = project.hasProperty('artifactoryUser') ? artifactoryUser : ''
-			password = project.hasProperty('artifactoryPassword') ? artifactoryPassword : ''
-		}
-		defaults {
-			publications ('maven')
-		}
-	}
-}
-*/
 
 task wrapper(type: Wrapper, description: 'Generates the Gradle wrapper') {
 	group = 'Buildmaster'

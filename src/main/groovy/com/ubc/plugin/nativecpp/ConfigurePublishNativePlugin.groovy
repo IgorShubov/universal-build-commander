@@ -19,8 +19,8 @@ class ConfigurePublishNativePlugin implements Plugin<Project> {
     }
 
     private boolean requiresPublishConfig(Project project) {
-        return (project.hasProperty("universalNativePlugin") &&
-                project.universalNativePlugin.nativeConfiguration &&
-                project.universalNativePlugin.nativeConfiguration['publication'])
+        return (project.hasProperty("nativePlugin") &&
+                project.nativePlugin.nativeConfiguration &&
+                project.nativePlugin.nativeConfiguration['publication'])
     }
 }

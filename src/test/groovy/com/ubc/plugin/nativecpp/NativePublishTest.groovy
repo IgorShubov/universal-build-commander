@@ -7,7 +7,6 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Test
 
 import static org.junit.Assert.*
-import static org.testng.Assert.assertFalse
 
 public class NativePublishTest {
 
@@ -19,6 +18,8 @@ public class NativePublishTest {
         project.apply plugin: ConfigurePublishNativePlugin
 
         assertNotNull(project.extensions.findByType(PublishConfiguration))
+
+        NativeBuildSupport.configurePublication(project)
 
         def expectedPublishConfig = new PublishConfiguration( publishDir: 'pubDir',
                                                               nativeArtifact: new NativeArtifact(group: 'com.ubc',
@@ -40,12 +41,12 @@ public class NativePublishTest {
         def project = ProjectBuilder.builder().build()
         project.setGroup("com.ubc")
         project.setVersion("1.1.0")
-        project.extensions.create("universalNativePlugin", NativePluginExtension)
+        project.extensions.create("nativePlugin", NativePluginExtension)
         project.extensions.create("buildCommander", BuildCommanderPluginExtension)
         project.buildCommander {
             archiveName = "pubTest"
         }
-        project.tektonNativePlugin {
+        project.nativePlugin {
             aol = "x86-64-linux-gcc"
             nativeConfiguration = [
                 'publishDir' : 'pubDir',
@@ -55,25 +56,26 @@ public class NativePublishTest {
                     'packageContext': 'fsw'
                 ]
             ]
+            buildServer = true
+            daBuild = false
         }
         NativeBuildSupport.configurePublication(project)
 
         assertTrue(project.publishConfig.publishEntireTargetDir)
         assertEquals('com.ubc', project.publishConfig.nativeArtifact.group)
-        assertEquals('pubTest', project.publishConfig.nativeArtifact.name)
+        assertEquals('test', project.publishConfig.nativeArtifact.name)
         assertEquals('1.1.0', project.publishConfig.nativeArtifact.version)
         assertEquals('x86-64-linux-gcc', project.publishConfig.nativeArtifact.aol)
         assertEquals('debug', project.publishConfig.nativeArtifact.classifier)
         assertEquals('tgz', project.publishConfig.nativeArtifact.ext)
         assertEquals('output', project.publishConfig.nativeArtifact.targetDir)
-        assertEquals('fsw', project.publishConfig.packageContext)
     }
 
     @Test
     public void configureTaskGraphWithPublication() {
         def project = ProjectBuilder.builder().build()
-        project.extensions.create("universalNativePlugin", NativePluginExtension)
-        project.universalNativePlugin {
+        project.extensions.create("nativePlugin", NativePluginExtension)
+        project.nativePlugin {
             buildServer = true
             daBuild = false
         }
@@ -95,7 +97,6 @@ public class NativePublishTest {
         def project = ProjectBuilder.builder().build()
         addPublicationConfig(project)
         project.extensions.create("buildCommander", BuildCommanderPluginExtension)
-        project.buildCommander.repoUrl = "https://dl.bintray.com/"
         NativeBuildSupport.declarePublication(project)
         NativeBuildSupport.loadBuildPlugins(project)
 
@@ -111,13 +112,15 @@ public class NativePublishTest {
     private void addPublicationConfig(Project project) {
         project.setGroup("com.ubc")
         project.setVersion("1.1.0")
-        project.extensions.create("universalNativePlugin", NativePluginExtension)
-        project.universalNativePlugin {
+        project.extensions.create("nativePlugin", NativePluginExtension)
+        project.nativePlugin {
 
             aol = "x86-64-linux-gcc"
             nativeConfiguration = ['publishDir' : 'pubDir',
                                    'publication': ['classifier': 'debug', 'ext': 'tgz', 'artifact': 'libXyz', 'targetDir': 'output']
             ]
+            buildServer = true
+            daBuild = false
         }
     }
 }

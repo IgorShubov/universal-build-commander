@@ -16,7 +16,7 @@ class NativeBuildSupport {
     }
 
     static boolean publishRequired(Project project) {
-        return project.nativePlugin.buildServer && !project.nativePlugin.daBuild && project.group != "" && project.version != "unspecified" && project.hasProperty('publishConfig')
+        return project.nativePlugin.buildServer && !project.nativePlugin.daBuild && project.group != "" && project.version != "unspecified"
     }
 
     // This method configure the project.gradle.taskGraph.  If a project that needs to
